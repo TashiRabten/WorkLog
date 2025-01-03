@@ -35,26 +35,45 @@ public class MainProgram {
         while (true) {
             System.out.println("\nMenu:");
             System.out.println("1. Log Work");
-            System.out.println("2. Exit");
+            System.out.println("2. Show Total");
+            System.out.println("3. Total Earned");
+            System.out.println("4. Exit");
             System.out.print("Choose an option: ");
             String choice = scanner.nextLine();
-
+        
             switch (choice) {
                 case "1":
                     logWork(scanner, logFile, logEntries);
                     break;
                 case "2":
+                    showTotal(logEntries);
+                    break;
+                case "3":
+                    showTotalEarned(logEntries);
+                    break;
+                case "4":
                     System.out.println("Exiting the program.");
                     return;
+
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        }
-    }
+        }}
+        
 
     private static void logWork(Scanner scanner, File logFile, Map<String, WorkLogEntry> logEntries) {
-        System.out.print("Enter the date (MM/DD/YYYY): ");
-        String date = scanner.nextLine();
+        
+        String date;
+
+        while (true) {
+            System.out.print("Enter the date (MM/DD/YYYY): ");
+            date = scanner.nextLine();
+        if (date.matches("^(0[1-9]|1[0-2])/([0-2][0-9]|3[01])/\\d{4}$")) {
+            break; // Exit loop if valid
+        } else {
+            System.out.println("Invalid date format. Please enter the date as MM/DD/YYYY.");
+        }
+        }
 
         if (logEntries.containsKey(date)) {
             System.out.println("Date " + date + " found. Do you want to update the entry? (yes/no)");
@@ -80,46 +99,120 @@ public class MainProgram {
             }
         }
     }
-
+    
     private static void updateLog(Scanner scanner, Map<String, WorkLogEntry> logEntries, String date) {
         WorkLogEntry entry = logEntries.get(date);
-
-        System.out.print("Enter the job type (SOSI or Lion Bridge): ");
-        String jobType = scanner.nextLine().toLowerCase();
-
-        if (jobType.contains("sosi")) {
-            System.out.print("Enter additional SOSI worked hours (decimal allowed): ");
-            double hours = Double.parseDouble(scanner.nextLine());
-            entry.addSosiHours(hours);
-        } else if (jobType.contains("lion") || jobType.contains("bridge")) {
-            System.out.print("Enter additional Lion Bridge worked minutes (decimal allowed): ");
-            double minutes = Double.parseDouble(scanner.nextLine());
-            entry.addLionBridgeMinutes(minutes);
-        } else {
-            System.out.println("Invalid job type. Returning to menu.");
+        while (true) {
+            System.out.print("Enter the job type (SOSI or Lion Bridge): ");
+            String jobType = scanner.nextLine().toLowerCase();
+        
+            if (jobType.contains("sosi")) {
+                while (true) {
+                    System.out.print("Enter additional SOSI worked hours (decimal allowed): ");
+                    try {
+                        double hours = Double.parseDouble(scanner.nextLine());
+                        entry.addSosiHours(hours);
+                        break; // Exit the numeric input loop
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a valid decimal number for hours.");
+                    }
+                }
+                break; // Exit the job type loop after successful input
+            } else if (jobType.contains("lion") || jobType.contains("bridge")) {
+                while (true) {
+                    System.out.print("Enter additional Lion Bridge worked minutes (decimal allowed): ");
+                    try {
+                        double minutes = Double.parseDouble(scanner.nextLine());
+                        entry.addLionBridgeMinutes(minutes);
+                        break; // Exit the numeric input loop
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a valid decimal number for minutes.");
+                    }
+                }
+                break; // Exit the job type loop after successful input
+            } else {
+                System.out.println("Invalid job type. Please enter 'SOSI' or 'Lion Bridge'.");
+            }
         }
     }
+        
 
     private static void createNewLogEntry(Scanner scanner, Map<String, WorkLogEntry> logEntries, String date) {
         WorkLogEntry entry = new WorkLogEntry(date);
+    
+        while (true) {
+            System.out.print("Enter the job type (SOSI or Lion Bridge): ");
+            String jobType = scanner.nextLine().toLowerCase();
+    
+            if (jobType.contains("sosi")) {
+                while (true) {
+                    System.out.print("Enter SOSI worked hours (decimal allowed): ");
+                    try {
+                        double hours = Double.parseDouble(scanner.nextLine());
+                        entry.addSosiHours(hours);
+                        break; // Exit the numeric input loop
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a valid decimal number for hours.");
+                    }
+                }
+                break; // Exit the job type loop after processing
+            } else if (jobType.contains("lion") || jobType.contains("bridge")) {
+                while (true) {
+                    System.out.print("Enter Lion Bridge worked minutes (decimal allowed): ");
+                    try {
+                        double minutes = Double.parseDouble(scanner.nextLine());
+                        entry.addLionBridgeMinutes(minutes);
+                        break; // Exit the numeric input loop
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a valid decimal number for minutes.");
+                    }
+                }
+                break; // Exit the job type loop after processing
+            } else {
+                System.out.println("Invalid job type. Please enter 'SOSI' or 'Lion Bridge'.");
+            }
+        }
+    
+        logEntries.put(date, entry); // Add the new log entry to the map
+    }
+    
 
-        System.out.print("Enter the job type (SOSI or Lion Bridge): ");
-        String jobType = scanner.nextLine().toLowerCase();
+    private static void showTotal(Map<String, WorkLogEntry> logEntries) {
+        double totalSosiHours = 0;
+        double totalLionBridgeMinutes = 0;
 
-        if (jobType.contains("sosi")) {
-            System.out.print("Enter SOSI worked hours (decimal allowed): ");
-            double hours = Double.parseDouble(scanner.nextLine());
-            entry.addSosiHours(hours);
-        } else if (jobType.contains("lion") || jobType.contains("bridge")) {
-            System.out.print("Enter Lion Bridge worked minutes (decimal allowed): ");
-            double minutes = Double.parseDouble(scanner.nextLine());
-            entry.addLionBridgeMinutes(minutes);
-        } else {
-            System.out.println("Invalid job type. Returning to menu.");
-            return;
+        for (WorkLogEntry entry : logEntries.values()) {
+            totalSosiHours += entry.getSosiHours();
+            totalLionBridgeMinutes += entry.getLionBridgeMinutes();
         }
 
-        logEntries.put(date, entry);
-    }
-}
+        double totalLionBridgeHours = totalLionBridgeMinutes / 60;
+        double overallTotalHours = totalSosiHours + totalLionBridgeHours;
 
+        System.out.println("\nTotal Work Summary:");
+        System.out.println("Total SOSI Hours: " + String.format("%.4f", totalSosiHours));
+        System.out.println("Total Lion Bridge Minutes: " +  String.format("%.4f",totalLionBridgeMinutes));
+        System.out.println("Total Lion Bridge Hours: " +  String.format("%.4f", totalLionBridgeHours));
+        System.out.println("Overall Total Hours: " +  String.format("%.4f", overallTotalHours));
+    }
+
+    private static void showTotalEarned(Map<String, WorkLogEntry> logEntries) {
+        double totalSosiIncome = 0;
+        double totalLionBridgeIncome = 0;
+    
+        // Calculate the income
+        for (WorkLogEntry entry : logEntries.values()) {
+            totalSosiIncome += entry.getSosiHours() * 46.97;
+            totalLionBridgeIncome += entry.getLionBridgeMinutes() * 0.65;
+        }
+    
+        double overallTotalIncome = totalSosiIncome + totalLionBridgeIncome;
+    
+        // Display the income summary
+        System.out.println("\nTotal Income Summary:");
+        System.out.println("Total SOSI Income: $" + String.format("%.2f", totalSosiIncome));
+        System.out.println("Total Lion Bridge Income: $" + String.format("%.2f", totalLionBridgeIncome));
+        System.out.println("Overall Total Income: $" + String.format("%.2f", overallTotalIncome));
+    }
+    
+}
